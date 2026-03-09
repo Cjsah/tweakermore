@@ -96,7 +96,7 @@ public class TadpoleBucketToolTipEnhancer
             //#endif
         int age = tag.getInt("Age")
             //#if MC >= 12105
-            //$$ .orElse(0);
+            //$$ .orElse(0)
             //#endif
             ;
         return Math.max(Tadpole.ticksToBeFrog - age, 0);
