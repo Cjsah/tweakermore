@@ -41,72 +41,71 @@ import java.util.List;
 
 public class TadpoleBucketToolTipEnhancer
 {
+	public static void applyLeftTimeHint(ItemStack bucket, List<Component> tooltip)
+	{
+		if (!RenderGlobals.isOnRenderThread())
+		{
+			// Do nothing in case it's called from non-render thread by whatever mod
+			// see also: https://github.com/Fallen-Breath/tweakermore/issues/138
+			return;
+		}
+		if (!TweakerMoreConfigs.TADPOLE_BUCKET_GROWTH_LEFT_TIME.getBooleanValue())
+		{
+			return;
+		}
+		if (tooltip.isEmpty())
+		{
+			return;
+		}
 
-    public static void applyLeftTimeHint(ItemStack bucket, List<Component> tooltip)
-    {
-        if (!RenderGlobals.isOnRenderThread())
-        {
-            // Do nothing in case it's called from non-render thread by whatever mod
-            // see also: https://github.com/Fallen-Breath/tweakermore/issues/138
-            return;
-        }
-        if (!TweakerMoreConfigs.TADPOLE_BUCKET_GROWTH_LEFT_TIME.getBooleanValue())
-        {
-            return;
-        }
-        if (tooltip.isEmpty())
-        {
-            return;
-        }
+		int ticks = getTadpoleLeftTicks(bucket);
+		String time = formatTicksToMinuteSecond(ticks);
 
-        int ticks = getTadpoleLeftTicks(bucket);
-        String time = formatTicksToMinuteSecond(ticks);
+		Component timeText = Messenger.s(time, ChatFormatting.GRAY);
 
-        Component timeText = Messenger.s(time, ChatFormatting.GRAY);
+		// let timeText be rendered right-aligned
+		String spacing = " ";
+		Component firstLine = Messenger.c(tooltip.get(0), spacing, timeText);
+		Font textRenderer = Minecraft.getInstance().font;
 
-        // let timeText be rendered right-aligned
-        String spacing = " ";
-        Component firstLine = Messenger.c(tooltip.get(0), spacing, timeText);
-        Font textRenderer = Minecraft.getInstance().font;
+		int maxWidth = tooltip.stream().mapToInt(textRenderer::width).max().orElse(0);
 
-        int maxWidth = tooltip.stream().mapToInt(textRenderer::width).max().orElse(0);
+		while (true)
+		{
+			List<Component> siblings = firstLine.getSiblings();
+			spacing += " ";
+			Component prevSpacing = siblings.get(1);
+			siblings.set(1, Messenger.s(spacing));
+			if (textRenderer.width(firstLine) > maxWidth)
+			{
+				siblings.set(1, prevSpacing);  // rollback
+				break;
+			}
+		}
+		tooltip.set(0, firstLine);
+	}
 
-        while (true)
-        {
-            List<Component> siblings = firstLine.getSiblings();
-            spacing += " ";
-            Component prevSpacing = siblings.get(1);
-            siblings.set(1, Messenger.s(spacing));
-            if (textRenderer.width(firstLine) > maxWidth)
-            {
-                siblings.set(1, prevSpacing);  // rollback
-                break;
-            }
-        }
-        tooltip.set(0, firstLine);
-    }
+	private static int getTadpoleLeftTicks(ItemStack bucket)
+	{
+		CompoundTag tag =
+				//#if MC < 12006
+				bucket.getOrCreateTag();
+		//#else
+		//$$ bucket.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).copyTag();
+		//#endif
+		int age = tag.getInt("Age")
+				//#if MC >= 12105
+				//$$ .orElse(0)
+				//#endif
+				;
+		return Math.max(Tadpole.ticksToBeFrog - age, 0);
+	}
 
-    private static int getTadpoleLeftTicks(ItemStack bucket)
-    {
-        CompoundTag tag =
-            //#if MC < 12006
-            bucket.getOrCreateTag();
-            //#else
-            //$$ bucket.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).copyTag();
-            //#endif
-        int age = tag.getInt("Age")
-            //#if MC >= 12105
-            //$$ .orElse(0)
-            //#endif
-            ;
-        return Math.max(Tadpole.ticksToBeFrog - age, 0);
-    }
-
-    private static String formatTicksToMinuteSecond(int ticks)
-    {
-        int totalSeconds = Mth.ceil((double) ticks / 20);
-        int minutes = totalSeconds / 60;
-        int seconds = totalSeconds % 60;
-        return String.format("%d:%02d", minutes, seconds);
-    }
+	private static String formatTicksToMinuteSecond(int ticks)
+	{
+		int totalSeconds = Mth.ceil((double)ticks / 20);
+		int minutes = totalSeconds / 60;
+		int seconds = totalSeconds % 60;
+		return String.format("%d:%02d", minutes, seconds);
+	}
 }
