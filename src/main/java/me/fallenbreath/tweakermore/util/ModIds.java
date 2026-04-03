@@ -52,7 +52,11 @@ public class ModIds
 	public static final String carpet_tis_addition = "carpet-tis-addition";
 	public static final String caxton = "caxton";
 	public static final String custom_skin_loader = "customskinloader";
+	//#if MC < 12100
 	public static final String easier_crafting = "easiercrafting";
+	//#else
+	//$$ public static final String easier_crafting = "easiercrafting-updated";
+	//#endif
 	public static final String extra_player_renderer = "explayerenderer";
 	public static final String fabric_carpet = "carpet";
 	public static final String iris = "iris";

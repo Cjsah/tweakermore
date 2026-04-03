@@ -27,8 +27,13 @@ import net.minecraft.world.inventory.ResultSlot;
 
 public class EasierCraftingRegistrar
 {
+	//#if MC < 12100
 	private static final String EASIER_CRAFTING_INVENTORY_CLASS = "de.guntram.mcmod.easiercrafting.ExtendedGuiInventory";
 	private static final String EASIER_CRAFTING_CRAFTING_TABLE_CLASS = "de.guntram.mcmod.easiercrafting.ExtendedGuiCrafting";
+	//#else
+	//$$ private static final String EASIER_CRAFTING_INVENTORY_CLASS = "de.guntram.mcmod.easiercrafting.extendedScreen.ExtendedGuiInventory";
+	//$$ private static final String EASIER_CRAFTING_CRAFTING_TABLE_CLASS = "de.guntram.mcmod.easiercrafting.extendedScreen.ExtendedGuiCrafting";
+	//#endif
 
 	private static final String CRAFTING_RESULT_SLOT_CLASS = ResultSlot.class.getName();
 
